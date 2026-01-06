@@ -1,0 +1,3 @@
+Loan decisions are based on credit score, income stability,
+debt-to-income ratio, and repayment history.
+Protected attributes must not be used.
