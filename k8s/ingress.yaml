@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: credit-ai-ingress
+  namespace: credit-ai-governance
+spec:
+  rules:
+  - host: credit-ai.bank.internal
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: credit-ai-service
+            port:
+              number: 80
