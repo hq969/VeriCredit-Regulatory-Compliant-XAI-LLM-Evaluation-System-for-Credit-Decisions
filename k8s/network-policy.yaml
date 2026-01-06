@@ -1,0 +1,14 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: credit-ai-zero-trust
+  namespace: credit-ai-governance
+spec:
+  podSelector:
+    matchLabels:
+      app: credit-ai-api
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: credit-ai-api
