@@ -6,13 +6,19 @@ from src.faithfulness import faithfulness_score
 from src.bias import bias_deviation
 from src.compliance import compliance_check
 from src.stability import stability_score
-from src.evaluator import evaluate
+from src.human_agreement import human_ai_agreement
+from src.rag_grounding import grounding_score
+from src.control_mapping import control_mapping
 from src.audit_logger import log_audit
+from src.pdf_report import generate_pdf
+
+df = pd.read_csv("data/credit_data.csv")
+human_df = pd.read_csv("data/human_explanations.csv")
+policy_text = open("data/credit_policy.txt").read()
 
 model, X = train_model()
-df = pd.read_csv("data/credit_data.csv")
-
 index = 0
+
 decision = df.loc[index, "approved"]
 features = X.iloc[index].to_dict()
 
@@ -28,19 +34,25 @@ bias = bias_deviation(df)
 compliance = compliance_check(llm_explanations[0])
 stability = stability_score(llm_explanations)
 
-results = evaluate(
-    shap_vals,
-    llm_explanations,
-    faith,
-    bias,
-    compliance,
-    stability
+human_agree = human_ai_agreement(
+    human_df.loc[0, "human_explanation"],
+    llm_explanations[0]
 )
+
+grounding = grounding_score(llm_explanations[0], policy_text)
+
+results = {
+    "faithfulness_score": faith,
+    "bias_deviation_index": bias,
+    "compliance_violation": compliance,
+    "stability_score": stability,
+    "human_ai_agreement": human_agree,
+    "policy_grounding_score": grounding
+}
+
+results.update(control_mapping(results))
 
 log_audit(results)
+generate_pdf(results)
 
-pd.DataFrame([results]).to_csv(
-    "reports/compliance_report.csv", index=False
-)
-
-print("Credit AI Evaluation Completed.")
+print("Regulatory-Grade Credit AI Evaluation Completed.")
